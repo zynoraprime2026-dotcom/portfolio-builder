@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Portfolio Builder</title>
+<style>
+:root{
+  --bg:#0E2A2B; --panel:#143B3C; --panel2:#0F3031; --line:#1E4344;
+  --cream:#F3ECDA; --muted:#8FB3B0; --gold:#C9A96A; --gold2:#E0C48C;
+  --danger:#E08A6D; --ok:#7FBFA0;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--cream);min-height:100vh}
+.wrap{max-width:1020px;margin:0 auto;padding:28px 20px 80px}
+.back{color:var(--muted);text-decoration:none;font-size:.88rem;display:inline-block;margin-bottom:18px}
+.back:hover{color:var(--cream)}
+h1{font-size:1.6rem;margin:0 0 4px}
+.artist{color:var(--gold);margin:0 0 6px;font-size:1rem}
+.desc{color:var(--muted);margin:0 0 18px;line-height:1.55;max-width:640px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
+h2{font-size:1.02rem;color:var(--gold);margin:0 0 14px}
+label{display:block;font-size:.76rem;color:var(--muted);margin:12px 0 5px;text-transform:uppercase;letter-spacing:.05em}
+input,textarea,select{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--cream);padding:11px 13px;font-size:.95rem;font-family:inherit;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--gold)}
+textarea{resize:vertical;min-height:56px}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+.row>div{flex:1;min-width:160px}
+button{cursor:pointer;border:none;border-radius:10px;padding:10px 18px;font-size:.92rem;font-weight:600;font-family:inherit}
+.btn-gold{background:var(--gold);color:#0E2A2B}
+.btn-gold:hover{background:var(--gold2)}
+.btn-gold:disabled{opacity:.6;cursor:wait}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+.btn-ghost:hover{color:var(--cream)}
+.btn-danger{background:transparent;color:var(--danger);border:1px solid rgba(224,138,109,.35)}
+.btn-danger:hover{background:rgba(224,138,109,.12)}
+.tabs{display:flex;gap:8px;margin-bottom:4px}
+.tab{flex:1;text-align:center;padding:9px;border-radius:10px;background:var(--panel2);color:var(--muted);font-weight:600;font-size:.88rem;cursor:pointer;border:1px solid var(--line)}
+.tab.on{background:rgba(201,169,106,.14);color:var(--gold);border-color:var(--gold)}
+.topbar{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:flex-start}
+.publish{display:flex;gap:10px;align-items:center}
+.status{font-size:.8rem;font-weight:700;padding:4px 12px;border-radius:99px}
+.status.pub{background:rgba(127,191,160,.15);color:var(--ok)}
+.status.priv{background:rgba(224,138,109,.12);color:var(--danger)}
+.share{margin-top:10px;background:var(--panel2);border:1px dashed var(--line);border-radius:10px;padding:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.share code{font-size:.78rem;color:var(--gold);word-break:break-all;flex:1;min-width:200px}
+.msg{margin-top:10px;font-size:.84rem;color:var(--muted);min-height:1.2em}
+.msg.err{color:var(--danger)} .msg.ok{color:var(--ok)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px;margin-top:16px}
+.aw{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.aw img{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:var(--panel2)}
+.aw .body{padding:13px}
+.aw .t{font-weight:700;font-size:.95rem;margin-bottom:3px}
+.aw .c{color:var(--muted);font-size:.8rem;line-height:1.45;margin-bottom:10px}
+.aw .del{font-size:.75rem;padding:6px 12px}
+.empty2{text-align:center;color:var(--muted);padding:40px;border:1px dashed var(--line);border-radius:14px;margin-top:16px}
+.foot{margin-top:44px;text-align:center;color:#5E8280;font-size:.78rem}
+.hidden{display:none}
+@media(max-width:640px){.wrap{padding:20px 14px 60px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← My Portfolios</a>
+  <div class="topbar">
+    <div style="flex:1;min-width:240px">
+      <h1 id="t">…</h1>
+      <p class="artist" id="a"></p>
+      <p class="desc" id="d"></p>
+    </div>
+    <div class="publish">
+      <span class="status priv" id="st">Private</span>
+      <button class="btn-gold" id="btn-pub" onclick="togglePublish()">Publish</button>
+    </div>
+  </div>
+  <div class="share hidden" id="share">
+    <code id="share-link"></code>
+    <button class="btn-ghost" onclick="copyShare()">Copy link</button>
+  </div>
+
+  <div class="card" style="margin-top:24px">
+    <h2>Add Artwork</h2>
+    <div class="tabs">
+      <div class="tab on" id="tab-url" onclick="mode('url')">Image URL</div>
+      <div class="tab" id="tab-gen" onclick="mode('gen')">✦ AI-Generated Art</div>
+    </div>
+    <label for="w-title">Title</label>
+    <input id="w-title" placeholder="e.g. Moon Over the Lagoon" maxlength="160">
+    <label for="w-caption">Caption</label>
+    <textarea id="w-caption" placeholder="A short story or note about this piece…" maxlength="1000"></textarea>
+    <div id="url-pane">
+      <label for="w-url">Image URL (https only)</label>
+      <input id="w-url" placeholder="https://…/artwork.jpg">
+    </div>
+    <div id="gen-pane" class="hidden">
+      <div class="row">
+        <div style="flex:2"><label for="w-prompt">Prompt</label><input id="w-prompt" placeholder="Describe the artwork you want…"></div>
+        <div><label for="w-size">Size</label>
+          <select id="w-size">
+            <option value="1024x1024">Square 1024×1024</option>
+            <option value="1080x1350">Portrait 1080×1350</option>
+            <option value="1350x1080">Landscape 1350×1080</option>
+          </select>
+        </div>
+        <div><label for="w-seed">Seed (optional)</label><input id="w-seed" type="number" placeholder="e.g. 42"></div>
+      </div>
+    </div>
+    <div class="actions" style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn-gold" id="btn-add" onclick="addArtwork()">Add Artwork</button>
+    </div>
+    <div class="msg" id="amsg"></div>
+  </div>
+
+  <h2 style="color:var(--cream);margin:26px 0 0;font-size:1.1rem">Artworks <span id="aw-count" style="color:var(--muted);font-weight:400;font-size:.85rem"></span></h2>
+  <div class="grid" id="grid"></div>
+  <div class="empty2 hidden" id="empty2">No artworks yet — add your first piece above.</div>
+
+  <p class="foot">Powered by Zynora AI · Studio API</p>
+</div>
+
+<script>
+const API = "https://studio-api-nqpm.onrender.com";
+const KEY = localStorage.getItem("pb_key");
+const PID = new URLSearchParams(location.search).get("id");
+let portfolio = null, addMode = "url";
+
+function $(id){return document.getElementById(id)}
+function setMsg(id,text,cls){const m=$(id);m.textContent=text;m.className="msg "+(cls||"")}
+
+if (!KEY){ location.href = "index.html"; }
+if (!PID){ location.href = "index.html"; }
+
+function mode(m){
+  addMode = m;
+  $("tab-url").classList.toggle("on", m==="url");
+  $("tab-gen").classList.toggle("on", m==="gen");
+  $("url-pane").classList.toggle("hidden", m!=="url");
+  $("gen-pane").classList.toggle("hidden", m!=="gen");
+}
+
+async function api(path, opts){
+  const o = Object.assign({}, opts, {headers: Object.assign({"x-api-key": KEY, "Content-Type":"application/json"}, (opts&&opts.headers)||{})});
+  const res = await fetch(API + path, o);
+  if (res.status === 429) throw new Error("The studio is busy (free tier limit). Try again in a minute.");
+  if (!res.ok){
+    let e = "Request failed";
+    try{ e = (await res.json()).error || e }catch(_){}
+    throw new Error(e);
+  }
+  return res.json();
+}
+
+function renderShare(){
+  const pub = portfolio.published;
+  $("st").textContent = pub ? "Published" : "Private";
+  $("st").className = "status " + (pub ? "pub" : "priv");
+  $("btn-pub").textContent = pub ? "Unpublish" : "Publish";
+  const sh = $("share");
+  if (pub){
+    const url = API + "/gallery/" + portfolio.id;
+    $("share-link").textContent = url;
+    sh.classList.remove("hidden");
+  } else sh.classList.add("hidden");
+}
+
+async function loadPortfolio(){
+  try{
+    portfolio = await api("/v1/portfolios/" + PID);
+    $("t").textContent = portfolio.title;
+    document.title = portfolio.title + " — Portfolio Builder";
+    $("a").textContent = portfolio.artist ? "by " + portfolio.artist : "";
+    $("d").textContent = portfolio.description || "";
+    renderShare();
+    renderArtworks();
+  }catch(e){
+    $("t").textContent = "Portfolio not found";
+    $("d").textContent = e.message;
+  }
+}
+
+function renderArtworks(){
+  const aws = portfolio.artworks || [];
+  $("aw-count").textContent = aws.length ? "(" + aws.length + ")" : "";
+  $("empty2").classList.toggle("hidden", aws.length>0);
+  const g = $("grid"); g.innerHTML = "";
+  for (const a of aws){
+    const el = document.createElement("div"); el.className = "aw";
+    el.innerHTML = `<img loading="lazy" alt=""><div class="body">
+      <div class="t"></div><div class="c"></div>
+      <button class="btn-danger del">Remove</button></div>`;
+    el.querySelector("img").src = a.image_url;
+    el.querySelector(".t").textContent = a.title;
+    el.querySelector(".c").textContent = a.description || "";
+    el.querySelector(".del").onclick = () => removeArtwork(a.id);
+    g.appendChild(el);
+  }
+}
+
+async function addArtwork(){
+  const title = $("w-title").value.trim();
+  if (!title) return setMsg("amsg","Give the artwork a title.","err");
+  const btn = $("btn-add"); btn.disabled = true;
+  const caption = $("w-caption").value.trim();
+  try{
+    let body = {title, description: caption};
+    if (addMode === "url"){
+      const url = $("w-url").value.trim();
+      if (!url.startsWith("https://")) { btn.disabled=false; return setMsg("amsg","Image URL must start with https://","err"); }
+      body.image_url = url;
+      btn.textContent = "Adding…";
+    } else {
+      const prompt = $("w-prompt").value.trim();
+      const [w,h] = $("w-size").value.split("x").map(Number);
+      const seedRaw = $("w-seed").value.trim();
+      body.generate = {prompt: prompt || title, width: w, height: h};
+      if (seedRaw) body.generate.seed = Number(seedRaw);
+      btn.textContent = "Generating…";
+      setMsg("amsg","Generating your artwork — this can take up to a minute…");
+    }
+    await api("/v1/portfolios/" + PID + "/artworks", {method:"POST", body: JSON.stringify(body)});
+    setMsg("amsg","Artwork added ✓","ok");
+    $("w-title").value=""; $("w-caption").value=""; $("w-url").value=""; $("w-prompt").value=""; $("w-seed").value="";
+    portfolio = await api("/v1/portfolios/" + PID);
+    renderArtworks();
+  }catch(e){ setMsg("amsg", e.message, "err"); }
+  btn.disabled=false; btn.textContent="Add Artwork";
+}
+
+async function removeArtwork(aid){
+  if (!confirm("Remove this artwork?")) return;
+  try{
+    await api("/v1/portfolios/" + PID + "/artworks/" + aid, {method:"DELETE"});
+    portfolio = await api("/v1/portfolios/" + PID);
+    renderArtworks();
+  }catch(e){ setMsg("amsg", e.message, "err"); }
+}
+
+async function togglePublish(){
+  const btn = $("btn-pub"); btn.disabled = true;
+  const target = !portfolio.published;
+  btn.textContent = target ? "Publishing…" : "Unpublishing…";
+  try{
+    const d = await api("/v1/portfolios/" + PID, {method:"PATCH", body: JSON.stringify({published: target})});
+    portfolio.published = d.published;
+    renderShare();
+    setMsg("amsg", target ? "Published — your public gallery link is live ✓" : "Gallery is now private.", "ok");
+  }catch(e){ setMsg("amsg", e.message, "err"); }
+  btn.disabled=false;
+}
+
+function copyShare(){
+  navigator.clipboard.writeText($("share-link").textContent).then(()=>{
+    setMsg("amsg","Gallery link copied ✓","ok");
+  });
+}
+
+loadPortfolio();
+</script>
+</body>
+</html>
